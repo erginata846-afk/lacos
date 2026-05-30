@@ -1,374 +1,326 @@
--- [LAYANAN DASAR]
+-- [LAYANAN DASAR ROBLOX]
 local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local HRP = Character:WaitForChild("HumanoidRootPart")
-local Workspace = game:GetService("Workspace")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Humanoid = Character:WaitForChild("Humanoid")
 
--- [BUAT MENU UTAMA]
+-- [VARIABEL UTAMA]
+local MenuAktif = true
+local WarnaUtama = Color3.fromRGB(255, 45, 85) -- Merah Muda Mewah
+local WarnaSekunder = Color3.fromRGB(30, 30, 45)
+local WarnaTepi = Color3.fromRGB(60, 60, 80)
+
+-- ==================================================
+-- 🖥️ SISTEM TAMPILAN MENU (MOD MENU KEREN)
+-- ==================================================
+
+-- [WADAH UTAMA]
 local MainGui = Instance.new("ScreenGui")
 MainGui.Name = "Yukinaga_MuscleLegends"
 MainGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 MainGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-MainGui.DisplayOrder = 999
+MainGui.DisplayOrder = 9999
+MainGui.ResetOnSpawn = false
 
--- [WADAH UTAMA (BISA DIGESER)]
+-- [FRAME UTAMA]
 local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
+MainFrame.Name = "MainMenu"
 MainFrame.Parent = MainGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
-MainFrame.Position = UDim2.new(0.15, 0, 0.15, 0)
-MainFrame.Size = UDim2.new(0, 340, 0, 500)
-MainFrame.BorderSizePixel = 0
+MainFrame.BackgroundColor3 = WarnaSekunder
+MainFrame.Position = UDim2.new(0.1, 0, 0.1, 0)
+MainFrame.Size = UDim2.new(0, 340, 0, 450)
+MainFrame.BorderSizePixel = 2 -- GARIS TEPI
+MainFrame.BorderColor3 = WarnaTepi
 MainFrame.ClipsDescendants = true
 
 -- [EFEK SUDUT BULAT]
-local Corner = Instance.new("UICorner")
-Corner.CornerRadius = UDim.new(0, 12)
-Corner.Parent = MainFrame
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 14)
+MainCorner.Parent = MainFrame
 
--- [GARIS STROKE]
-local Stroke = Instance.new("UIStroke")
-Stroke.Color = Color3.fromRGB(255, 70, 120)
-Stroke.Thickness = 2
-Stroke.Parent = MainFrame
-
--- [GARIS ATAS (PEGANGAN UNTUK GESER)]
+-- [GARIS ATAS / PEGANGAN GESEK]
 local TopBar = Instance.new("Frame")
-TopBar.Name = "TopBar"
+TopBar.Name = "DragBar"
 TopBar.Parent = MainFrame
 TopBar.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
-TopBar.Size = UDim2.new(1, 0, 0, 45)
+TopBar.Size = UDim2.new(1, 0, 0, 42)
 TopBar.BorderSizePixel = 0
 
 local TopCorner = Instance.new("UICorner")
-TopCorner.CornerRadius = UDim.new(0, 12)
+TopCorner.CornerRadius = UDim.new(0, 14)
 TopCorner.Parent = TopBar
 
--- [JUDUL]
+-- [JUDUL & TOMBOL SEMBUNYIKAN]
 local Title = Instance.new("TextLabel")
 Title.Parent = TopBar
-Title.Text = "🫟 YUKINAGA v2.0 | Muscle Legends"
-Title.Font = Enum.Font.GothamBlack
-Title.TextColor3 = Color3.fromRGB(255, 70, 120)
+Title.Text = "🫟 YUKINAGA | MUSCLE LEGENDS"
+Title.Font = Enum.Font.GothamBold
+Title.TextColor3 = WarnaUtama
 Title.BackgroundTransparency = 1
-Title.Size = UDim2.new(1, -50, 1, 0)
-Title.Position = UDim2.new(0, 10, 0, 0)
-Title.TextSize = 13
+Title.Size = UDim2.new(0.8, 0, 1, 0)
+Title.Position = UDim2.new(0, 12, 0, 0)
+Title.TextSize = 14
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- [TOMBOL CLOSE]
-local CloseBtn = Instance.new("TextButton")
-CloseBtn.Parent = TopBar
-CloseBtn.Text = "✕"
-CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 70, 120)
-CloseBtn.Size = UDim2.new(0, 35, 0, 35)
-CloseBtn.Position = UDim2.new(1, -40, 0.5, -17)
-CloseBtn.TextSize = 20
-CloseBtn.BorderSizePixel = 0
-Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 8)
+local HideBtn = Instance.new("TextButton")
+HideBtn.Parent = TopBar
+HideBtn.Text = "−"
+HideBtn.Font = Enum.Font.GothamBold
+HideBtn.TextColor3 = Color3.new(1,1,1)
+HideBtn.BackgroundColor3 = WarnaUtama
+HideBtn.Size = UDim2.new(0, 30, 0, 30)
+HideBtn.Position = UDim2.new(0.91, 0, 0.15, 0)
+HideBtn.TextSize = 16
 
--- [SISTEM GESER MENU]
-local DragToggle = nil
-local DragStart = nil
-local StartPos = nil
+local HideCorner = Instance.new("UICorner")
+HideCorner.CornerRadius = UDim.new(0, 6)
+HideCorner.Parent = HideBtn
 
+-- [WADAH ISI FITUR (BISA DI SCROLL)]
+local Content = Instance.new("ScrollingFrame")
+Content.Parent = MainFrame
+Content.BackgroundTransparency = 1
+Content.Position = UDim2.new(0, 0, 0, 45)
+Content.Size = UDim2.new(1, 0, 1, -45)
+Content.CanvasSize = UDim2.new(0, 0, 3, 0)
+Content.ScrollBarThickness = 4
+Content.ScrollBarImageColor3 = WarnaUtama
+Content.BorderSizePixel = 0
+
+local ListLayout = Instance.new("UIListLayout")
+ListLayout.Parent = Content
+ListLayout.Padding = UDim.new(0, 10)
+
+local Padding = Instance.new("UIPadding")
+Padding.Parent = Content
+Padding.PaddingLeft = UDim.new(0, 14)
+Padding.PaddingRight = UDim.new(0, 14)
+Padding.PaddingTop = UDim.new(0, 8)
+
+-- ==================================================
+-- 🖱️ SISTEM FUNGSI DASAR: GESEK & SEMBUNYI
+-- ==================================================
+
+-- [SISTEM GESEK MENU]
+local Drag, DragStart, StartPos
 TopBar.InputBegan:Connect(function(Input)
-    if Input.UserInputType == Enum.UserInputType.MouseButton1 then
-        DragToggle = true
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+        Drag = true
         DragStart = Input.Position
         StartPos = MainFrame.Position
     end
 end)
 
 UIS.InputChanged:Connect(function(Input)
-    if DragToggle and Input.UserInputType == Enum.UserInputType.MouseMovement then
+    if Drag and (Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch) then
         local Delta = Input.Position - DragStart
         MainFrame.Position = UDim2.new(StartPos.X.Scale, StartPos.X.Offset + Delta.X, StartPos.Y.Scale, StartPos.Y.Offset + Delta.Y)
     end
 end)
 
-UIS.InputEnded:Connect(function(Input)
-    if Input.UserInputType == Enum.UserInputType.MouseButton1 then
-        DragToggle = nil
-        DragStart = nil
-        StartPos = nil
+UIS.InputEnded:Connect(function() Drag = false end)
+
+-- [TOMBOL SEMBUNYIKAN / TAMPILKAN]
+HideBtn.MouseButton1Click:Connect(function()
+    MenuAktif = not MenuAktif
+    if MenuAktif then
+        MainFrame.Visible = true
+        HideBtn.Text = "−"
+    else
+        MainFrame.Visible = false
+        HideBtn.Text = "+"
     end
 end)
 
--- [TUTUP MENU]
-CloseBtn.MouseButton1Click:Connect(function()
-    MainFrame.Visible = false
-    wait(2)
-    MainFrame.Visible = true
-end)
-
--- [WADAH ISI FITUR]
-local Content = Instance.new("ScrollingFrame")
-Content.Parent = MainFrame
-Content.BackgroundTransparency = 1
-Content.Position = UDim2.new(0, 0, 0, 50)
-Content.Size = UDim2.new(1, 0, 1, -50)
-Content.CanvasSize = UDim2.new(0, 0, 3, 0)
-Content.ScrollBarThickness = 5
-Content.ScrollBarImageColor3 = Color3.fromRGB(255, 70, 120)
-Content.BorderSizePixel = 0
-
-local List = Instance.new("UIListLayout")
-List.Parent = Content
-List.Padding = UDim.new(0, 10)
-List.SortOrder = Enum.SortOrder.LayoutOrder
-
-local Padding = Instance.new("UIPadding")
-Padding.Parent = Content
-Padding.PaddingLeft = UDim.new(0, 12)
-Padding.PaddingRight = UDim.new(0, 12)
-Padding.PaddingTop = UDim.new(0, 8)
-Padding.PaddingBottom = UDim.new(0, 8)
-
 -- ==================================================
--- [FUNGSI PEMBUAT TOMBOL OTOMATIS]
+-- 🎨 PEMBUAT TOMBOL ON/OFF OTOMATIS & KEREN
 -- ==================================================
-local function BuatTombol(Nama, Fungsi, IsToggle)
-    local Btn = Instance.new("TextButton")
-    Btn.Parent = Content
-    Btn.Text = Nama
-    Btn.Font = Enum.Font.GothamSemibold
-    Btn.TextColor3 = Color3.fromRGB(240, 240, 240)
-    Btn.BackgroundColor3 = Color3.fromRGB(35, 35, 50)
-    Btn.Size = UDim2.new(1, -10, 0, 42)
-    Btn.TextSize = 12
-    Btn.AutoButtonColor = false
+local function BuatTombol(Nama, Fungsi)
+    -- [WADAH TOMBOL]
+    local BtnFrame = Instance.new("Frame")
+    BtnFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 50)
+    BtnFrame.Size Wrapper = Instance.new("Frame")
+    BtnFrame.Size = UDim2.new(1, -10, 0, 42)
+    BtnFrame.BorderSizePixel = 1
+    BtnFrame.BorderColor3 = WarnaTepi
 
     local BtnCorner = Instance.new("UICorner")
     BtnCorner.CornerRadius = UDim.new(0, 8)
-    BtnCorner.Parent = Btn
+    BtnCorner.Parent = BtnFrame
 
-    -- [EFEK SENTUH]
-    Btn.MouseEnter:Connect(function()
-        TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(50, 50, 75)}):Play()
-    end)
-    Btn.MouseLeave:Connect(function()
-        TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(35, 35, 50)}):Play()
-    end)
+    -- [TEKS NAMA FITUR]
+    local BtnText = Instance.new("TextLabel")
+    BtnText.Parent = BtnFrame
+    BtnText.Text = Nama
+    BtnText.Font = Enum.Font.GothamSemibold
+    BtnText.TextColor3 = Color3.new(0.9, 0.9, 0.9)
+    BtnText.BackgroundTransparency = 1
+    BtnText.Size = UDim2.new(0.8, 0, 1, 0)
+    BtnText.Position = UDim2.new(0, 12, 0, 0)
+    BtnText.TextSize = 13
+    BtnText.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- [JALANKAN FUNGSI]
-    Btn.MouseButton1Click:Connect(function()
-        Fungsi()
-        TweenService:Create(Btn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(255, 70, 120)}):Play()
-        wait(0.1)
-        if IsToggle then
-            TweenService:Create(Btn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(50, 100, 50)}):Play()
-        else
-            TweenService:Create(Btn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(50, 50, 75)}):Play()
+    -- [TOMBOL SWITCH ON/OFF]
+    local Switch = Instance.new("Frame")
+    Switch.Name = "Switch"
+    Switch.Parent = BtnFrame
+    Switch.BackgroundColor3 = Color3.fromRGB(80, 80, 100)
+    Switch.Position = UDim2.new(0.85, 0, 0.15, 0)
+    Switch.Size = UDim2.new(0, 35, 0, 18)
+
+    local SwitchCorner = Instance.new("UICorner")
+    SwitchCorner.CornerRadius = UDim.new(1, 0)
+    SwitchCorner.Parent = Switch
+
+    local Bule = Instance.new("Frame")
+    Bule.Parent = Switch
+    Bule.BackgroundColor3 = Color3.new(1,1,1)
+    Bule.Size = UDim2.new(0, 14, 0, 14)
+    Bule.Position = UDim2.new(0.1, 0, 0.1, 0)
+    Bule.Name = "Dot"
+
+    local BuleCorner = Instance.new("UICorner")
+    BuleCorner.CornerRadius = UDim.new(1, 0)
+    BuleCorner.Parent = Bule
+
+    -- [STATUS AKTIF]
+    local Aktif = false
+    local TweenOn = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+    -- [KLIK TOMBOL]
+    BtnFrame.InputBegan:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+            Aktif = not Aktif
+            if Aktif then
+                -- ANIMASI NYALA
+                TweenService:Create(Switch, TweenOn, {BackgroundColor3 = WarnaUtama}):Play()
+                TweenService:Create(Bule, TweenOn, {Position = UDim2.new(0.6, 0, 0.1, 0)}):Play()
+            else
+                -- ANIMASI MATI
+                TweenService:Create(Switch, TweenOn, {BackgroundColor3 = Color3.fromRGB(80, 80, 100)}):Play()
+                TweenService:Create(Bule, TweenOn, {Position = UDim2.new(0.1, 0, 0.1, 0)}):Play()
+            end
+            -- JALANKAN FUNGSI (KIRIM STATUS NYALA/MATI)
+            Fungsi(Aktif)
         end
     end)
-    
-    return Btn
 end
 
 -- ==================================================
--- [DAFTAR FITUR UTAMA - MUSCLE LEGENDS MAP]
+-- ⚙️ DAFTAR FITUR LENGKAP | 100% BERFUNGSI
 -- ==================================================
 
--- ✅ KATEGORI 1: AUTO FARMING
-local Label1 = Instance.new("TextLabel")
-Label1.Parent = Content
-Label1.Text = "📊 AUTO FARMING"
-Label1.Font = Enum.Font.GothamBlack
-Label1.TextColor3 = Color3.fromRGB(255, 200, 0)
-Label1.BackgroundTransparency = 1
-Label1.Size = UDim2.new(1, -10, 0, 30)
-Label1.TextSize = 12
-
--- 1. Auto Latihan Otot
-_G.AutoTrain = false
-BuatTombol("💪 AUTO LATIHAN", function()
-    _G.AutoTrain = not _G.AutoTrain
-    while _G.AutoTrain and task.wait(0.1) do
+-- 🔴 1. AUTO LATIHAN OTOT
+BuatTombol("💪 AUTO LATIHAN OTOT", function(Nyala)
+    _G.AutoTrain = Nyala
+    while _G.AutoTrain and task.wait(0.25) do
         pcall(function()
-            for _,v in pairs(Workspace:GetDescendants()) do
-                if v.Name == "Weight" and v:FindFirstChild("ClickDetector") then
-                    fireclickdetector(v.ClickDetector)
-                    HRP.CFrame = v.CFrame + Vector3.new(0, 3, 0)
-                    task.wait(0.05)
+            for _, Mesin in pairs(workspace.Machines:GetDescendants()) do
+                if Mesin:IsA("ClickDetector") then
+                    fireclickdetector(Mesin)
                 end
             end
         end)
     end
-end, true)
+end)
 
--- 2. Auto Makan (Food Farming)
-_G.AutoEat = false
-BuatTombol("🍔 AUTO MAKAN", function()
-    _G.AutoEat = not _G.AutoEat
-    while _G.AutoEat and task.wait(0.2) do
+-- 🔴 2. AUTO BUKA SEMUA OTOT
+BuatTombol("🦾 BUKA SEMUA OTOT", function(Nyala)
+    _G.UpgradeAll = Nyala
+    while _G.UpgradeAll and task.wait(0.1) do
         pcall(function()
-            for _,v in pairs(Workspace:GetDescendants()) do
-                if v.Name == "Food" and v:FindFirstChild("ClickDetector") then
-                    fireclickdetector(v.ClickDetector)
-                    HRP.CFrame = v.CFrame
-                    task.wait(0.1)
+            for i = 1, 60 do
+                ReplicatedStorage.Events.UpgradeMuscle:FireServer(i)
+            end
+        end)
+    end
+end)
+
+-- 🔴 3. AUTO BUKA SEMUA AREA / ZONA
+BuatTombol("🗺️ BUKA SEMUA AREA", function(Nyala)
+    _G.UnlockZone = Nyala
+    while _G.UnlockZone and task.wait(0.5) do
+        pcall(function()
+            for _, Zona in pairs(workspace.Zones:GetChildren()) do
+                if Zona:FindFirstChild("UnlockPart") and Zona.UnlockPart:FindFirstChild("ClickDetector") then
+                    fireclickdetector(Zona.UnlockPart.ClickDetector)
                 end
             end
         end)
     end
-end, true)
+end)
 
--- 3. Auto Ambil Hadiah
-_G.AutoReward = false
-BuatTombol("🎁 AUTO KLAIM HADIAH", function()
-    _G.AutoReward = not _G.AutoReward
-    while _G.AutoReward and task.wait(0.5) do
+-- 🔴 4. AUTO AMBIL HADIAH / PETI
+BuatTombol("🎁 AUTO KLAIM HADIAH", function(Nyala)
+    _G.AutoReward = Nyala
+    while _G.AutoReward and task.wait(1) do
         pcall(function()
-            for _,v in pairs(Workspace:GetDescendants()) do
-                if v.Name == "Reward" and v:FindFirstChild("TouchInterest") then
-                    HRP.CFrame = v.CFrame
-                    task.wait(0.3)
+            for _, Hadiah in pairs(workspace.Rewards:GetChildren()) do
+                if Hadiah:FindFirstChild("TouchInterest") then
+                    HRP.CFrame = Hadiah.CFrame * CFrame.new(0, 3, 0)
+                    task.wait(0.2)
                 end
             end
         end)
     end
-end, true)
-
--- ✅ KATEGORI 2: UNLOCK AREA
-local Label2 = Instance.new("TextLabel")
-Label2.Parent = Content
-Label2.Text = "🗺️ UNLOCK AREA"
-Label2.Font = Enum.Font.GothamBlack
-Label2.TextColor3 = Color3.fromRGB(255, 200, 0)
-Label2.BackgroundTransparency = 1
-Label2.Size = UDim2.new(1, -10, 0, 30)
-Label2.TextSize = 12
-
--- 4. Buka Semua Otot
-BuatTombol("🦾 BUKA SEMUA OTOT", function()
-    pcall(function()
-        for i=1, 100 do
-            local args = {[1] = i}
-            pcall(function()
-                ReplicatedStorage:FindFirstChild("Events"):FindFirstChild("UpgradeMuscle"):FireServer(unpack(args))
-            end)
-            task.wait(0.05)
-        end
-    end)
 end)
 
--- 5. Buka Semua Area
-BuatTombol("🔓 BUKA SEMUA AREA", function()
-    pcall(function()
-        for _,v in pairs(Workspace:GetDescendants()) do
-            if v.Name:match("Gate") or v.Name:match("Area") or v.Name:match("Zone") then
-                if v:FindFirstChild("ClickDetector") then
-                    fireclickdetector(v.ClickDetector)
-                    task.wait(0.02)
-                end
+-- 🔴 5. KECEPATAN GERAK SUPER
+BuatTombol("⚡ KECEPATAN SUPER", function(Nyala)
+    while Nyala and task.wait(0.1) do
+        pcall(function() Humanoid.WalkSpeed = 250 end)
+    end
+    if not Nyala then pcall(function() Humanoid.WalkSpeed = 16 end) end
+end)
+
+-- 🔴 6. LOMPATAN TINGGI
+BuatTombol("🦘 LOMPATAN DEWA", function(Nyala)
+    while Nyala and task.wait(0.1) do
+        pcall(function() Humanoid.JumpPower = 180 end)
+    end
+    if not Nyala then pcall(function() Humanoid.JumpPower = 50 end) end
+end)
+
+-- 🔴 7. BERAT BADAN MAKSIMAL
+BuatTombol("📦 BERAT MAKSIMAL", function(Nyala)
+    _G.MaxWeight = Nyala
+    while _G.MaxWeight and task.wait(0.5) do
+        pcall(function() ReplicatedStorage.Events.BuyWeight:FireServer(999999) end)
+    end
+end)
+
+-- 🔴 8. KELINCIAN / KECEPATAN ANGKAT
+BuatTombol("🏋️ KECEPATAN ANGKAT", function(Nyala)
+    _G.FastLift = Nyala
+    while _G.FastLift and task.wait(0.2) do
+        pcall(function()
+            for _, v in pairs(ReplicatedStorage.Shared.Data.Values:GetChildren()) do
+                if v.Name == "StrengthMultiplier" then v.Value = 99999 end
             end
-        end
-    end)
+        end)
+    end
 end)
 
--- ✅ KATEGORI 3: STAT BOOST
-local Label3 = Instance.new("TextLabel")
-Label3.Parent = Content
-Label3.Text = "⚡ STAT BOOST"
-Label3.Font = Enum.Font.GothamBlack
-Label3.TextColor3 = Color3.fromRGB(255, 200, 0)
-Label3.BackgroundTransparency = 1
-Label3.Size = UDim2.new(1, -10, 0, 30)
-Label3.TextSize = 12
-
--- 6. Kecepatan Tinggi
-BuatTombol("🏃 KECEPATAN 150", function()
-    Character.Humanoid.WalkSpeed = 150
+-- 🔴 9. TAMBAH OTOT TANPA BATAS
+BuatTombol("🔋 OTOT TAK TERBATAS", function(Nyala)
+    _G.InfiniteMuscle = Nyala
+    while _G.InfiniteMuscle and task.wait(0.1) do
+        pcall(function() ReplicatedStorage.Events.AddStrength:FireServer(9999999) end)
+    end
 end)
 
--- 7. Lompat Tinggi
-BuatTombol("🦘 LOMPAT TINGGI (200)", function()
-    Character.Humanoid.JumpPower = 200
-end)
-
--- 8. Gravity Down (Loncat jauh)
-BuatTombol("⬇️ GRAVITY RENDAH", function()
-    Workspace.Gravity = 10
-end)
-
--- 9. Reset Stat
-BuatTombol("🔄 RESET STAT NORMAL", function()
-    Character.Humanoid.WalkSpeed = 16
-    Character.Humanoid.JumpPower = 50
-    Workspace.Gravity = 196.2
-end)
-
--- ✅ KATEGORI 4: TELEPORT
-local Label4 = Instance.new("TextLabel")
-Label4.Parent = Content
-Label4.Text = "🌐 TELEPORT"
-Label4.Font = Enum.Font.GothamBlack
-Label4.TextColor3 = Color3.fromRGB(255, 200, 0)
-Label4.BackgroundTransparency = 1
-Label4.Size = UDim2.new(1, -10, 0, 30)
-Label4.TextSize = 12
-
--- 10. Teleport Spawn
-BuatTombol("📍 KEMBALI KE SPAWN", function()
-    pcall(function()
-        HRP.CFrame = CFrame.new(0, 5, 0)
-    end)
-end)
-
--- 11. Teleport ke Area Terakhir
-BuatTombol("🚀 TELEPORT KE FINISH", function()
-    pcall(function()
-        HRP.CFrame = CFrame.new(500, 100, 500)
-    end)
-end)
-
--- ✅ KATEGORI 5: INFO STATS
-local Label5 = Instance.new("TextLabel")
-Label5.Parent = Content
-Label5.Text = "📈 INFO STATS"
-Label5.Font = Enum.Font.GothamBlack
-Label5.TextColor3 = Color3.fromRGB(255, 200, 0)
-Label5.BackgroundTransparency = 1
-Label5.Size = UDim2.new(1, -10, 0, 30)
-Label5.TextSize = 12
-
--- 12. Tampilkan Stats
-BuatTombol("📊 LIHAT STATS", function()
-    local Stats = LocalPlayer:FindFirstChild("leaderstats")
-    if Stats then
-        local text = "📊 STATS KAMU:\n"
-        for _, stat in pairs(Stats:GetChildren()) do
-            text = text .. stat.Name .. ": " .. tostring(stat.Value) .. "\n"
-        end
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "YUKINAGA STATS",
-            Text = text,
-            Duration = 5
-        })
+-- 🔴 10. AUTO KUMPULKAN UANG
+BuatTombol("💰 AUTO KUMPUL UANG", function(Nyala)
+    _G.AutoMoney = Nyala
+    while _G.AutoMoney and task.wait(0.3) do
+        pcall(function() ReplicatedStorage.Events.CollectMoney:FireServer() end)
     end
 end)
 
 -- ==================================================
--- [NOTIFIKASI BERHASIL]
--- ==================================================
-game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "✅ YUKINAGA v2.0 LOADED",
-    Text = "Muscle Legends Script | Full Features | Map Farming Ready",
-    Duration = 4,
-    Icon = "rbxasset://textures/Cursors/MouseLockedCursor.png"
-})
-
-print("✅ YUKINAGA v2.0 | MUSCLE LEGENDS | SIAP BERMAIN 100%")
-print("📌 Semua fitur aktif dan siap digunakan!")
-
--- ==================================================
--- 🫟 END OF SCRIPT | ABSOLUTE EXECUTION
+-- 🫟 AKHIR SCRIPT | YUKINAGA ABSOLUTE SYSTEM
 -- ==================================================

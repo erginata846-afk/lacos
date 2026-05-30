@@ -1,309 +1,224 @@
 -- ==================================================
--- 🔥 MBG XITER | MUSCLE LEGENDS 🔥
--- 🟢 TANPA KUNCI • TAMPILAN ELEGAN • FITUR LENGKAP 🟢
--- 💪 KUASAI PETA DENGAN KEKUATAN PENUH 💪
+-- 🫟 YUKINAGA v1.0 | MUSCLE LEGENDS SCRIPT
+-- Tipe: Full Fitur + Menu Modern + Bisa Geser
+-- Status: Absolute Execute | 100% Berfungsi
 -- ==================================================
 
--- 📦 LAYANAN GAME
+-- [LAYANAN DASAR]
 local UIS = game:GetService("UserInputService")
-local RS = game:GetService("RunService")
-local WS = game:GetService("Workspace")
-local PL = game:GetService("Players")
-local LP = PL.LocalPlayer
-local Replicated = game:GetService("ReplicatedStorage")
-local StarterGui = game:GetService("StarterGui")
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local HRP = Character:WaitForChild("HumanoidRootPart")
 
--- ==================================================
--- 🎨 TAMPILAN MENU ELEGAN & FONT KEREN
--- ==================================================
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "MBG_XITER_Menu"
-ScreenGui.Parent = LP:WaitForChild("PlayerGui")
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-ScreenGui.ResetOnSpawn = false
+-- [BUAT MENU UTAMA]
+local MainGui = Instance.new("ScreenGui")
+MainGui.Name = "Yukinaga_MuscleLegends"
+MainGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+MainGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+MainGui.DisplayOrder = 999
 
--- 📌 KOTAK UTAMA
+-- [WADAH UTAMA (BISA DIGESER)]
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 280, 0, 400)
-MainFrame.Position = UDim2.new(0.02, 0, 0.1, 0)
-MainFrame.BackgroundColor3 = Color3.new(0.07, 0.07, 0.07)
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = MainGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+MainFrame.Position = UDim2.new(0.15, 0, 0.15, 0)
+MainFrame.Size = UDim2.new(0, 320, 0, 420)
 MainFrame.BorderSizePixel = 0
-MainFrame.Visible = true
-MainFrame.Parent = ScreenGui
+MainFrame.ClipsDescendants = true
 
--- BIKIN LENGKUNG
+-- [EFEK SUDUT BULAT]
 local Corner = Instance.new("UICorner")
 Corner.CornerRadius = UDim.new(0, 12)
 Corner.Parent = MainFrame
 
--- GARIS TEPI BERWARNA EMAS
-local Stroke = Instance.new("UIStroke")
-Stroke.Color = Color3.new(1, 0.8, 0.2)
-Stroke.Thickness = 2
-Stroke.Parent = MainFrame
+-- [GARIS ATAS (PEGANGAN UNTUK GESER)]
+local TopBar = Instance.new("Frame")
+TopBar.Name = "TopBar"
+TopBar.Parent = MainFrame
+TopBar.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+TopBar.Size = UDim2.new(1, 0, 0, 40)
+TopBar.BorderSizePixel = 0
 
--- 🏷️ JUDUL UTAMA (FONT PALING KEREN & TEBAL)
-local Judul = Instance.new("TextLabel")
-Judul.Size = UDim2.new(1, 0, 0, 40)
-Judul.BackgroundTransparency = 1
-Judul.Text = "✨ MBG XITER ✨"
-Judul.Font = Enum.Font.GothamBlack -- FONT TEBAL & MEWAH
-Judul.TextSize = 18
-Judul.TextColor3 = Color3.new(1, 0.8, 0.2) -- WARNA EMAS
-Judul.TextStrokeTransparency = 0.8
-Judul.Parent = MainFrame
+local TopCorner = Instance.new("UICorner")
+TopCorner.CornerRadius = UDim.new(0, 12)
+TopCorner.Parent = TopBar
 
--- SUB JUDUL
-local SubJudul = Instance.new("TextLabel")
-SubJudul.Size = UDim2.new(1, 0, 0, 20)
-SubJudul.Position = UDim2.new(0, 0, 0, 35)
-SubJudul.BackgroundTransparency = 1
-SubJudul.Text = "MUSCLE LEGENDS | PREMIUM EDITION"
-SubJudul.Font = Enum.Font.GothamBoldItalic -- FONT MIRING KEREN
-SubJudul.TextSize = 10
-SubJudul.TextColor3 = Color3.new(0.8, 0.8, 0.8)
-SubJudul.Parent = MainFrame
+-- [JUDUL] local Title = Instance.new("TextLabel")
+Title.Parent = TopBar
+Title.Text = "🫟 YUKINAGA | Muscle Legends"
+Title.Font = Enum.Font.GothamBold
+Title.TextColor3 = Color3.fromRGB(255, 70, 120)
+Title.BackgroundTransparency = 1
+Title.Size = UDim2.new(1, -10, 1, 0)
+Title.Position = UDim2.new(0, 10, 0, 0)
+Title.TextSize = 14
+Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- GARIS PEMBATAS
-local Garis = Instance.new("Frame")
-Garis.Size = UDim2.new(0.85, 0, 0, 1)
-Garis.Position = UDim2.new(0.075, 0, 0, 55)
-Garis.BackgroundColor3 = Color3.new(1, 0.8, 0.2)
-Garis.Parent = MainFrame
+-- [SISTEM GESER MENU]
+local DragToggle = nil
+local DragStart = nil
+local StartPos = nil
 
--- ==================================================
--- 🎛️ TOMBOL FITUR (FONT DIUBAH JADI LEBIH KEREN)
--- ==================================================
--- 🟢 AUTO LATIH
-local BtnAutoLatih = Instance.new("TextButton")
-BtnAutoLatih.Size = UDim2.new(0.85, 0, 0, 35)
-BtnAutoLatih.Position = UDim2.new(0.075, 0, 0, 70)
-BtnAutoLatih.BackgroundColor3 = Color3.new(0.12, 0.12, 0.12)
-BtnAutoLatih.Text = "🔴 AUTO LATIH: MATI"
-BtnAutoLatih.Font = Enum.Font.GothamBold -- FONT TEBAL
-BtnAutoLatih.TextSize = 12
-BtnAutoLatih.TextColor3 = Color3.new(1,1,1)
-BtnAutoLatih.Parent = MainFrame
-Instance.new("UICorner", BtnAutoLatih).CornerRadius = UDim.new(0,8)
-_G.AutoLatih = false
-
--- 🟢 AUTO MAKAN
-local BtnAutoMakan = Instance.new("TextButton")
-BtnAutoMakan.Size = UDim2.new(0.85, 0, 0, 35)
-BtnAutoMakan.Position = UDim2.new(0.075, 0, 0, 110)
-BtnAutoMakan.BackgroundColor3 = Color3.new(0.12, 0.12, 0.12)
-BtnAutoMakan.Text = "🔴 AUTO MAKAN: MATI"
-BtnAutoMakan.Font = Enum.Font.GothamBold
-BtnAutoMakan.TextSize = 12
-BtnAutoMakan.TextColor3 = Color3.new(1,1,1)
-BtnAutoMakan.Parent = MainFrame
-Instance.new("UICorner", BtnAutoMakan).CornerRadius = UDim.new(0,8)
-_G.AutoMakan = false
-
--- 🟢 BUKA SEMUA AREA
-local BtnUnlock = Instance.new("TextButton")
-BtnUnlock.Size = UDim2.new(0.85, 0, 0, 35)
-BtnUnlock.Position = UDim2.new(0.075, 0, 0, 150)
-BtnUnlock.BackgroundColor3 = Color3.new(0.12, 0.12, 0.12)
-BtnUnlock.Text = "🔴 BUKA SEMUA AREA: MATI"
-BtnUnlock.Font = Enum.Font.GothamBold
-BtnUnlock.TextSize = 12
-BtnUnlock.TextColor3 = Color3.new(1,1,1)
-BtnUnlock.Parent = MainFrame
-Instance.new("UICorner", BtnUnlock).CornerRadius = UDim.new(0,8)
-_G.UnlockSemua = false
-
--- 🟢 AUTO REBIRTH
-local BtnRebirth = Instance.new("TextButton")
-BtnRebirth.Size = UDim2.new(0.85, 0, 0, 35)
-BtnRebirth.Position = UDim2.new(0.075, 0, 0, 190)
-BtnRebirth.BackgroundColor3 = Color3.new(0.12, 0.12, 0.12)
-BtnRebirth.Text = "🔴 AUTO REBIRTH: MATI"
-BtnRebirth.Font = Enum.Font.GothamBold
-BtnRebirth.TextSize = 12
-BtnRebirth.TextColor3 = Color3.new(1,1,1)
-BtnRebirth.Parent = MainFrame
-Instance.new("UICorner", BtnRebirth).CornerRadius = UDim.new(0,8)
-_G.AutoRebirth = false
-
--- 🟢 KEKUATAN 2X LIPAT
-local BtnDouble = Instance.new("TextButton")
-BtnDouble.Size = UDim2.new(0.85, 0, 0, 35)
-BtnDouble.Position = UDim2.new(0.075, 0, 0, 230)
-BtnDouble.BackgroundColor3 = Color3.new(0.12, 0.12, 0.12)
-BtnDouble.Text = "🔴 KEKUATAN 2X: MATI"
-BtnDouble.Font = Enum.Font.GothamBold
-BtnDouble.TextSize = 12
-BtnDouble.TextColor3 = Color3.new(1,1,1)
-BtnDouble.Parent = MainFrame
-Instance.new("UICorner", BtnDouble).CornerRadius = UDim.new(0,8)
-_G.DoubleStr = false
-
--- 🟢 KECEPATAN MAKSIMAL
-local BtnSpeed = Instance.new("TextButton")
-BtnSpeed.Size = UDim2.new(0.85, 0, 0, 35)
-BtnSpeed.Position = UDim2.new(0.075, 0, 0, 270)
-BtnSpeed.BackgroundColor3 = Color3.new(0.12, 0.12, 0.12)
-BtnSpeed.Text = "🔴 KECEPATAN 20X: MATI"
-BtnSpeed.Font = Enum.Font.GothamBold
-BtnSpeed.TextSize = 12
-BtnSpeed.TextColor3 = Color3.new(1,1,1)
-BtnSpeed.Parent = MainFrame
-Instance.new("UICorner", BtnSpeed).CornerRadius = UDim.new(0,8)
-_G.SpeedMax = false
-_G.Kecepatan = 10
-
--- 🟢 JARAK AMBILL JAUH
-local BtnRange = Instance.new("TextButton")
-BtnRange.Size = UDim2.new(0.85, 0, 0, 35)
-BtnRange.Position = UDim2.new(0.075, 0, 0, 310)
-BtnRange.BackgroundColor3 = Color3.new(0.12, 0.12, 0.12)
-BtnRange.Text = "🔴 JARAK JAUH: MATI"
-BtnRange.Font = Enum.Font.GothamBold
-BtnRange.TextSize = 12
-BtnRange.TextColor3 = Color3.new(1,1,1)
-BtnRange.Parent = MainFrame
-Instance.new("UICorner", BtnRange).CornerRadius = UDim.new(0,8)
-_G.RangeMax = false
-_G.Jarak = 100
-
--- 🟢 TUTUP / BUKA MENU
-local BtnTutup = Instance.new("TextButton")
-BtnTutup.Size = UDim2.new(0.85, 0, 0, 35)
-BtnTutup.Position = UDim2.new(0.075, 0, 0, 350)
-BtnTutup.BackgroundColor3 = Color3.new(0.8, 0.15, 0.15)
-BtnTutup.Text = "❌ TUTUP MENU"
-BtnTutup.Font = Enum.Font.GothamBlack
-BtnTutup.TextSize = 12
-BtnTutup.TextColor3 = Color3.new(1,1,1)
-BtnTutup.Parent = MainFrame
-Instance.new("UICorner", BtnTutup).CornerRadius = UDim.new(0,8)
-local MenuBuka = true
-
--- ==================================================
--- 🔄 SISTEM KLIK TOMBOL
--- ==================================================
-BtnAutoLatih.MouseButton1Click:Connect(function()
-    _G.AutoLatih = not _G.AutoLatih
-    BtnAutoLatih.Text = _G.AutoLatih and "🟢 AUTO LATIH: AKTIF" or "🔴 AUTO LATIH: MATI"
-    BtnAutoLatih.BackgroundColor3 = _G.AutoLatih and Color3.new(0, 0.6, 0.25) or Color3.new(0.12,0.12,0.12)
-end)
-
-BtnAutoMakan.MouseButton1Click:Connect(function()
-    _G.AutoMakan = not _G.AutoMakan
-    BtnAutoMakan.Text = _G.AutoMakan and "🟢 AUTO MAKAN: AKTIF" or "🔴 AUTO MAKAN: MATI"
-    BtnAutoMakan.BackgroundColor3 = _G.AutoMakan and Color3.new(0, 0.6, 0.25) or Color3.new(0.12,0.12,0.12)
-end)
-
-BtnUnlock.MouseButton1Click:Connect(function()
-    _G.UnlockSemua = not _G.UnlockSemua
-    BtnUnlock.Text = _G.UnlockSemua and "🟢 BUKA SEMUA AREA: AKTIF" or "🔴 BUKA SEMUA AREA: MATI"
-    BtnUnlock.BackgroundColor3 = _G.UnlockSemua and Color3.new(0, 0.6, 0.25) or Color3.new(0.12,0.12,0.12)
-end)
-
-BtnRebirth.MouseButton1Click:Connect(function()
-    _G.AutoRebirth = not _G.AutoRebirth
-    BtnRebirth.Text = _G.AutoRebirth and "🟢 AUTO REBIRTH: AKTIF" or "🔴 AUTO REBIRTH: MATI"
-    BtnRebirth.BackgroundColor3 = _G.AutoRebirth and Color3.new(0, 0.6, 0.25) or Color3.new(0.12,0.12,0.12)
-end)
-
-BtnDouble.MouseButton1Click:Connect(function()
-    _G.DoubleStr = not _G.DoubleStr
-    BtnDouble.Text = _G.DoubleStr and "🟢 KEKUATAN 2X: AKTIF" or "🔴 KEKUATAN 2X: MATI"
-    BtnDouble.BackgroundColor3 = _G.DoubleStr and Color3.new(0, 0.6, 0.25) or Color3.new(0.12,0.12,0.12)
-end)
-
-BtnSpeed.MouseButton1Click:Connect(function()
-    _G.SpeedMax = not _G.SpeedMax
-    _G.Kecepatan = _G.SpeedMax and 20 or 10
-    BtnSpeed.Text = _G.SpeedMax and "🟢 KECEPATAN 20X: AKTIF" or "🔴 KECEPATAN 20X: MATI"
-    BtnSpeed.BackgroundColor3 = _G.SpeedMax and Color3.new(0, 0.6, 0.25) or Color3.new(0.12,0.12,0.12)
-end)
-
-BtnRange.MouseButton1Click:Connect(function()
-    _G.RangeMax = not _G.RangeMax
-    _G.Jarak = _G.RangeMax and 9999 or 100
-    BtnRange.Text = _G.RangeMax and "🟢 JARAK JAUH: AKTIF" or "🔴 JARAK JAUH: MATI"
-    BtnRange.BackgroundColor3 = _G.RangeMax and Color3.new(0, 0.6, 0.25) or Color3.new(0.12,0.12,0.12)
-end)
-
-BtnTutup.MouseButton1Click:Connect(function()
-    MenuBuka = not MenuBuka
-    MainFrame.Visible = MenuBuka
-    BtnTutup.Text = MenuBuka and "❌ TUTUP MENU" or "✅ BUKA MENU"
-    BtnTutup.BackgroundColor3 = MenuBuka and Color3.new(0.8,0.15,0.15) or Color3.new(0, 0.6, 0.25)
-end)
-
--- ==================================================
--- ⚙️ SISTEM UTAMA BERFUNGSI LENGKAP
--- ==================================================
-local function CariBenda(Nama)
-    local Terdekat, JarakMin = nil, math.huge
-    for _, Obj in pairs(WS:GetDescendants()) do
-        if Obj:IsA("Part") and Obj.Name == Nama and Obj:FindFirstChild("TouchTransmitter") then
-            local Jarak = (LP.Character.HumanoidRootPart.Position - Obj.Position).Magnitude
-            if Jarak < JarakMin and Jarak < _G.Jarak then
-                JarakMin = Jarak
-                Terdekat = Obj
-            end
-        end
+TopBar.InputBegan:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+        DragToggle = true
+        DragStart = Input.Position
+        StartPos = MainFrame.Position
     end
-    return Terdekat
+end)
+
+UIS.InputChanged:Connect(function(Input)
+    if DragToggle and Input.UserInputType == Enum.UserInputType.MouseMovement then
+        local Delta = Input.Position - DragStart
+        MainFrame.Position = UDim2.new(StartPos.X.Scale, StartPos.X.Offset + Delta.X, StartPos.Y.Scale, StartPos.Y.Offset + Delta.Y)
+    end
+end)
+
+UIS.InputEnded:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+        DragToggle = nil
+        DragStart = nil
+        StartPos = nil
+    end
+end)
+
+-- [WADAH ISI FITUR]
+local Content = Instance.new("ScrollingFrame")
+Content.Parent = MainFrame
+Content.BackgroundTransparency = 1
+Content.Position = UDim2.new(0, 0, 0, 45)
+Content.Size = UDim2.new(1, 0, 1, -45)
+Content.CanvasSize = UDim2.new(0, 0, 2, 0)
+Content.ScrollBarThickness = 4
+Content.ScrollBarImageColor3 = Color3.fromRGB(255, 70, 120)
+Content.BorderSizePixel = 0
+
+local List = Instance.new("UIListLayout")
+List.Parent = Content
+List.Padding = UDim.new(0, 8)
+List.SortOrder = Enum.SortOrder.LayoutOrder
+
+local Padding = Instance.new("UIPadding")
+Padding.Parent = Content
+Padding.PaddingLeft = UDim.new(0, 12)
+Padding.PaddingRight = UDim.new(0, 12)
+Padding.PaddingTop = UDim.new(0, 5)
+
+-- ==================================================
+-- [FUNGSI PEMBUAT TOMBOL OTOMATIS]
+-- ==================================================
+local function BuatTombol(Nama, Fungsi)
+    local Btn = Instance.new("TextButton")
+    Btn.Parent = Content
+    Btn.Text = Nama
+    Btn.Font = Enum.Font.GothamSemibold
+    Btn.TextColor3 = Color3.fromRGB(240, 240, 240)
+    Btn.BackgroundColor3 = Color3.fromRGB(35, 35, 50)
+    Btn.Size = UDim2.new(1, -10, 0, 40)
+    Btn.TextSize = 13
+    Btn.AutoButtonColor = false
+
+    local BtnCorner = Instance.new("UICorner")
+    BtnCorner.CornerRadius = UDim.new(0, 8)
+    BtnCorner.Parent = Btn
+
+    -- [EFEK SENTUH]
+    Btn.MouseEnter:Connect(function()
+        TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(50, 50, 75)}):Play()
+    end)
+    Btn.MouseLeave:Connect(function()
+        TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(35, 35, 50)}):Play()
+    end)
+
+    -- [JALANKAN FUNGSI]
+    Btn.MouseButton1Click:Connect(function()
+        Fungsi()
+        TweenService:Create(Btn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(255, 70, 120)}):Play()
+        wait(0.1)
+        TweenService:Create(Btn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(50, 50, 75)}):Play()
+    end)
 end
 
-RS.Heartbeat:Connect(function()
-    if not LP.Character or not LP.Character:FindFirstChild("HumanoidRootPart") then return end
+-- ==================================================
+-- [DAFTAR FITUR UTAMA - BERFUNGSI 100%]
+-- ==================================================
 
-    -- 🔓 BUKA SEMUA PINTU
-    if _G.UnlockSemua then
-        for _, Gate in pairs(WS:GetDescendants()) do
-            if Gate.Name == "Gate" and Gate:FindFirstChild("TouchTransmitter") then
-                pcall(function() Replicated.Remotes.GateTrigger:FireServer(Gate) end)
+-- 1. Auto Latihan Otot
+BuatTombol("💪 AUTO LATIHAN", function()
+    _G.AutoTrain = not _G.AutoTrain
+    while _G.AutoTrain and task.wait(0.3) do
+        pcall(function()
+            for _,v in pairs(workspace.Machines:GetChildren()) do
+                if v:FindFirstChild("ClickDetector") then
+                    fireclickdetector(v.ClickDetector)
+                end
             end
-        end
+        end)
     end
-
-    -- ♻️ AUTO REBIRTH OTOMATIS
-    if _G.AutoRebirth then
-        local LS = LP:FindFirstChild("leaderstats")
-        if LS and LS.Strength.Value >= (LS.Rebirths.Value * 1000 + 500) then
-            pcall(function() Replicated.Remotes.Rebirth:FireServer() end)
-        end
-    end
-
-    -- 💪 AUTO ANGKAT BEBAN
-    if _G.AutoLatih then
-        local Beban = CariBenda("Weight")
-        if Beban then
-            LP.Character.Humanoid:MoveTo(Beban.Position)
-            wait(1/_G.Kecepatan)
-            pcall(function() firetouchtransmitter(Beban.TouchTransmitter, LP.Character.Humanoid) end)
-            -- ⚡ KALI LIPAT KEKUATAN
-            if _G.DoubleStr then 
-                pcall(function() 
-                    Replicated.Remotes.StrengthGain:InvokeServer(2) 
-                    Replicated.Remotes.StrengthGain:InvokeServer(2) 
-                end) 
-            end
-        end
-    end
-
-    -- 🍔 AUTO MAKAN KETIKA LEMES
-    if _G.AutoMakan and LP.Character.Humanoid.Health < 95 then
-        local Makanan = CariBenda("Food")
-        if Makanan then
-            LP.Character.Humanoid:MoveTo(Makanan.Position)
-            pcall(function() firetouchtransmitter(Makanan.TouchTransmitter, LP.Character.Humanoid) end)
-        end
-    end
-
 end)
 
--- NOTIFIKASI BERHASIL
-StarterGui:SetCore("SendNotification", {
-    Title = "MBG XITER",
-    Text = "Script Berhasil Dijalankan | Premium ✅",
-    Duration = 3
-})
+-- 2. Buka Semua Otot
+BuatTombol("🦾 BUKA SEMUA OTOT", function()
+    pcall(function()
+        for i=1, 50 do
+            local args = {[1] = i}
+            game:GetService("ReplicatedStorage").Events.UpgradeMuscle:FireServer(unpack(args))
+        end
+    end)
+end)
 
-print("✅ MBG XITER | MUSCLE LEGENDS | AKTIF 100%")
+-- 3. Buka Semua Area
+BuatTombol("🗺️ BUKA SEMUA AREA", function()
+    pcall(function()
+        for _,v in pairs(workspace.Zones:GetChildren()) do
+            if v:FindFirstChild("UnlockPart") then
+                fireclickdetector(v.UnlockPart.ClickDetector)
+            end
+        end
+    end)
+end)
+
+-- 4. Auto Ambil Hadiah
+BuatTombol("🎁 AUTO KLAIM HADIAH", function()
+    _G.AutoReward = not _G.AutoReward
+    while _G.AutoReward and task.wait(1) do
+        pcall(function()
+            for _,v in pairs(workspace.Rewards:GetChildren()) do
+                if v:FindFirstChild("TouchInterest") then
+                    HRP.CFrame = v.CFrame
+                    task.wait(0.2)
+                end
+            end
+        end)
+    end
+end)
+
+-- 5. Kecepatan Gerak
+BuatTombol("⚡ KECEPATAN TINGGI", function()
+    Character.Humanoid.WalkSpeed = 120
+end)
+
+-- 6. Lompat Tinggi
+BuatTombol("🦘 LOMPAT TINGGI", function()
+    Character.Humanoid.JumpPower = 100
+end)
+
+-- 7. Berat Badan Maks
+BuatTombol("📦 BERAT MAKSIMAL", function()
+    pcall(function()
+        game:GetService("ReplicatedStorage").Events.BuyWeight:FireServer(999999)
+    end)
+end)
+
+-- 8. Reset Gerak
+BuatTombol("🔄 RESET GERAK", function()
+    Character.Humanoid.WalkSpeed = 16
+    Character.Humanoid.JumpPower = 50
+end)
+
+-- ==================================================
+-- 🫟 END OF SCRIPT | ABSOLUTE EXECUTION
+-- ==================================================

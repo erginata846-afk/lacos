@@ -1,9 +1,3 @@
--- ==================================================
--- 🫟 YUKINAGA v2.0 | MUSCLE LEGENDS SCRIPT ADVANCED
--- Tipe: Full Fitur + Menu Modern + Bisa Geser + MAP FARMING
--- Status: Absolute Execute | 100% Berfungsi
--- ==================================================
-
 -- [LAYANAN DASAR]
 local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
